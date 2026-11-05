@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ThongTinDangVien</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', sans-serif; 
+            background: #f0f2f5; 
+            padding: 15px; 
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .app-container { 
+            max-width: 1200px; 
+            width: 100%;
+            margin: auto; 
+            background: white; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
+            overflow: hidden; 
+        }
+        .header{ 
+            text-align:center; 
+            padding: 20px 12px 10px 12px; 
+            background: linear-gradient(to bottom, #fff5f0, #ffffff);
+        }
+        .header h2{ 
+            display:inline-block; 
+            position:relative; 
+            font-size:clamp(20px, 4vw, 40px); 
+            color:#ff6600; 
+            margin:0; 
+            padding:6px 0; 
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        .header h2::before{ 
+            content:""; 
+            position:absolute; 
+            left:0; 
+            top:0; 
+            width:100%; 
+            height:2px; 
+            background: linear-gradient(to right, transparent, #ff6600, transparent);
+        }
+        .header h2::after{ 
+            content:""; 
+            position:absolute; 
+            left:0; 
+            bottom:0; 
+            width:100%; 
+            height:2px; 
+            background: linear-gradient(to right, transparent, #ff6600, transparent);
+        }
+        .form-body { padding: 20px; }
+        .grid-inputs { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
+            gap: 15px; 
+            margin-bottom: 15px; 
+        }
+        .field-group { margin-bottom: 10px; }
+        .date-group { 
+            background: #f8f9fa; 
+            padding: 15px; 
+            border-radius: 8px; 
+            border: 2px solid #e9ecef; 
+            margin-bottom: 15px; 
+        }
+        .date-group h3 { 
+            margin: 0 0 15px 0; 
+            font-size: 16px; 
+            padding-bottom: 8px; 
+            color: #856404; 
+            border-bottom: 2px dashed #e9ecef;
+        }
+        label { 
+            font-weight: 600; 
+            font-size: 13px; 
+            color: #555; 
+            display: block; 
+            margin-bottom: 5px; 
+        }
+        label .required { 
+            color: #dc3545; 
+            font-weight: bold; 
+        }
+        input { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            font-size: 15px; 
+            transition: border-color 0.3s;
+        }
+        input:focus {
+            outline: none;
+            border-color: #ff6600;
+            box-shadow: 0 0 0 3px rgba(255, 102, 0, 0.1);
+        }
+
+        .step-guide { 
+            background: #fff9db; 
+            color: #856404; 
+            padding: 12px; 
+            border-radius: 6px; 
+            border: 1px solid #ffeeba; 
+            margin-top: 20px; 
+            text-align: center; 
+            font-size: 14px; 
+            font-weight: 600; 
+        }
+
+        .actions { 
+            margin-top: 20px; 
+            display: flex; 
+            justify-content: center; 
+        }
+        .btn { 
+            padding: 15px 50px; 
+            border: none; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            color: white; 
+            transition: all 0.3s; 
+            font-size: 16px;
+            width: 100%;
+            max-width: 350px;
+        }
+        .btn-send { 
+            background: linear-gradient(135deg, #ff6600, #e55a00); 
+            min-width: 220px; 
+            box-shadow: 0 4px 15px rgba(255, 102, 0, 0.3);
+        }
+        .btn-send:hover:not(:disabled) { 
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 102, 0, 0.4);
+        }
+        .btn-send:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn-send:disabled { 
+            background: #ffb27a; 
+            cursor: not-allowed; 
+            box-shadow: none;
+        }
+
+        /* Toast notifications */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            width: 90%;
+            max-width: 500px;
+        }
+        .toast {
+            padding: 15px 25px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            font-size: 15px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            animation: slideDown 0.4s ease-out;
+            display: none;
+            width: 100%;
+            text-align: center;
+            line-height: 1.5;
+        }
+        .toast-success { 
+            background: linear-gradient(135deg, #28a745, #1e7e34); 
+        }
+        .toast-error { 
+            background: linear-gradient(135deg, #dc3545, #b02a37); 
+        }
+        .toast-loading { 
+            background: linear-gradient(135deg, #ff6600, #e55a00); 
+        }
+        .toast-info { 
+            background: linear-gradient(135deg, #17a2b8, #0f7a8a); 
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-30px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .footer{ 
+            text-align:center; 
+            padding: 20px 12px;
+            background: linear-gradient(to top, #fff5f0, #ffffff);
+        }
+        .footer span{ 
+            display:inline-block; 
+            position:relative; 
+            color:#ff6600; 
+            font-weight:700; 
+            font-size:clamp(16px, 3vw, 40px); 
+            padding:6px 0; 
+            text-shadow: 0.5px 0.5px 1px rgba(0,0,0,0.1);
+        }
+        .footer span::before{ 
+            content:""; 
+            position:absolute; 
+            left:0; 
+            top:0; 
+            width:100%; 
+            height:1px; 
+            background: linear-gradient(to right, transparent, #ff6600, transparent);
+        }
+        .footer span::after{ 
+            content:""; 
+            position:absolute; 
+            left:0; 
+            bottom:0; 
+            width:100%; 
+            height:1px; 
+            background: linear-gradient(to right, transparent, #ff6600, transparent);
+        }
+        .footer .sub-text {
+            font-size: 14px;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        @media (max-width: 600px) {
+            .grid-inputs {
+                grid-template-columns: 1fr;
+            }
+            .btn {
+                padding: 15px 30px;
+                font-size: 14px;
+            }
+            .form-body {
+                padding: 15px;
+            }
+            .toast {
+                font-size: 13px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="toast-container">
+        <div id="loadingToast" class="toast toast-loading">⏳ Đang gửi dữ liệu, vui lòng chờ...</div>
+        <div id="successToast" class="toast toast-success">✅ Gửi thông tin thành công! Cảm ơn bạn đã cung cấp.</div>
+        <div id="errorToast" class="toast toast-error">❌ Gửi thất bại! Vui lòng kiểm tra kết nối và thử lại.</div>
+        <div id="infoToast" class="toast toast-info">ℹ️ Đã gửi, đang chờ phản hồi từ hệ thống...</div>
+    </div>
+
+    <div class="app-container">
+        <div class="header">
+            <h2>📋 FORM THÔNG TIN ĐẢNG VIÊN</h2>
+        </div>
+        
+        <div class="form-body">
+            <div class="grid-inputs">
+                <div class="field-group">
+                    <label>Họ và tên <span class="required">*</span></label>
+                    <input id="fullName" type="text" placeholder="Nhập họ và tên" autofocus>
+                </div>
+                
+                <div class="date-group">
+                    <h3>📅 Ngày tháng năm sinh</h3>
+                    <div class="field-group">
+                        <label>Nhập theo định dạng: dd/mm/yyyy</label>
+                        <input id="birthDate" type="text" placeholder="VD: 01/01/2000">
+                    </div>
+                </div>
+                
+                <div class="date-group">
+                    <h3>📅 Ngày vào đảng</h3>
+                    <div class="field-group">
+                        <label>Nhập theo định dạng: dd/mm/yyyy</label>
+                        <input id="partyDate" type="text" placeholder="VD: 01/01/2000">
+                    </div>
+                </div>
+                
+                <div class="field-group">
+                    <label>Số CCCD</label>
+                    <input id="cccd" type="text" inputmode="numeric" maxlength="12" placeholder="Nhập số cccd (12 số)">
+                </div>
+                
+                <div class="field-group">
+                    <label>Số điện thoại</label>
+                    <input id="phone" type="text" inputmode="numeric" maxlength="12" placeholder="Nhập số điện thoại">
+                </div>
+                
+                <div class="field-group">
+                    <label>Địa chỉ thường trú</label>
+                    <input id="address" type="text" placeholder="Nhập số nhà, đường phố,...">
+                </div>
+                
+                <div class="field-group">
+                    <label>Đơn vị đang công tác</label>
+                    <input id="workUnit" type="text" placeholder="Nhập đơn vị đang công tác">
+                </div>
+                
+                <div class="field-group">
+                    <label>Ghi chú</label>
+                    <input id="note" type="text" placeholder="Nhập ghi chú (nếu có)">
+                </div>
+            </div>
+
+            <div class="step-guide">
+                💡 Nhập đầy đủ thông tin, kiểm tra lại. <br> Sau đó nhấn "Gửi dữ liệu"
+            </div>
+
+            <div class="actions">
+                <button class="btn btn-send" id="sendBtn">
+                    📤 GỬI DỮ LIỆU
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <span>CHI BỘ 25 THẠC GIÁN</span>
+            <div class="sub-text">Phường Thanh Khê, Thành phố Đà Nẵng</div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://script.google.com/macros/s/AKfycbzhNq_KLfyLQKtTNFYFki3VpL5A5u8nYfDH3j5vynnLPCkBIssVWlXuMLcEyZ05L8U/exec'; // Thay bằng URL của script
+
+        const loadingToast = document.getElementById('loadingToast');
+        const successToast = document.getElementById('successToast');
+        const errorToast = document.getElementById('errorToast');
+        const infoToast = document.getElementById('infoToast');
+
+        let toastTimeout = null;
+
+        function hideAllToasts() {
+            if (toastTimeout) {
+                clearTimeout(toastTimeout);
+                toastTimeout = null;
+            }
+            loadingToast.style.display = 'none';
+            successToast.style.display = 'none';
+            errorToast.style.display = 'none';
+            infoToast.style.display = 'none';
+        }
+
+        function showToast(toastElement, duration = 3000) {
+            hideAllToasts();
+            toastElement.style.display = 'block';
+            // Tự động ẩn sau thời gian chỉ định
+            if (duration > 0) {
+                toastTimeout = setTimeout(() => {
+                    toastElement.style.display = 'none';
+                    toastTimeout = null;
+                }, duration);
+            }
+        }
+
+        // Chỉ cho phép nhập số cho CCCD và SĐT
+        ["cccd", "phone"].forEach(id => {
+            document.getElementById(id).addEventListener('input', function(e) {
+                this.value = this.value.replace(/[^0-9]/g, '').slice(0, 12);
+            });
+        });
+
+        function getEntry() {
+            return {
+                "Họ và tên": document.getElementById("fullName").value.trim().toUpperCase(),
+                "Ngày tháng năm sinh": document.getElementById("birthDate").value.trim(),
+                "Ngày vào đảng": document.getElementById("partyDate").value.trim(),
+                "Số CCCD": document.getElementById("cccd").value.trim(),
+                "Số điện thoại": document.getElementById("phone").value.trim(),
+                "Địa chỉ thường trú": document.getElementById("address").value.trim(),
+                "Đơn vị đang công tác": document.getElementById("workUnit").value.trim(),
+                "Ghi chú": document.getElementById("note").value.trim()
+            };
+        }
+
+        function clearForm() {
+            ["fullName", "birthDate", "partyDate", "cccd", "phone", "address", "workUnit", "note"]
+                .forEach(id => document.getElementById(id).value = "");
+            document.getElementById('fullName').focus();
+        }
+
+        async function sendToSheets() {
+            const fullName = document.getElementById('fullName');
+            if (!fullName.value.trim()) {
+                // Sử dụng alert thay vì toast vì cần người dùng tương tác
+                alert('⚠️ Vui lòng nhập Họ và tên!');
+                fullName.focus();
+                return;
+            }
+
+            const entry = getEntry();
+            const btn = document.getElementById('sendBtn');
+            
+            // Disable button và hiển thị trạng thái
+            btn.disabled = true;
+            btn.innerHTML = '⏳ ĐANG GỬI...';
+            showToast(loadingToast, 0); // 0 = không tự động ẩn
+
+            try {
+                // Gửi dữ liệu
+                const response = await fetch(API_URL, { 
+                    method: 'POST', 
+                    mode: 'no-cors',
+                    body: JSON.stringify({ data: [entry] }) 
+                });
+
+                // Với mode 'no-cors', không thể đọc response
+                // Hiển thị thông báo thành công
+                hideAllToasts();
+                showToast(successToast, 4000);
+                
+                // Xóa form
+                clearForm();
+
+            } catch (e) {
+                // Lỗi kết nối
+                hideAllToasts();
+                showToast(errorToast, 5000);
+                console.error('Lỗi gửi dữ liệu:', e);
+            }
+
+            // Reset button
+            btn.disabled = false;
+            btn.innerHTML = '📤 GỬI DỮ LIỆU';
+        }
+
+        document.getElementById('sendBtn').onclick = sendToSheets;
+
+        // Enter key navigation
+        document.addEventListener('keydown', e => {
+            if (e.key === 'Enter' && e.target.tagName === 'INPUT') {
+                const fieldIds = ["fullName", "birthDate", "partyDate", "cccd", "phone", "address", "workUnit", "note"];
+                const idx = fieldIds.indexOf(e.target.id);
+                if (idx < fieldIds.length - 1) {
+                    e.preventDefault();
+                    document.getElementById(fieldIds[idx+1]).focus();
+                } else {
+                    e.preventDefault();
+                    document.getElementById('sendBtn').click();
+                }
+            }
+        });
+
+        // Auto uppercase cho họ tên
+        document.getElementById('fullName').addEventListener('input', function(e) {
+            this.value = this.value.toUpperCase();
+        });
+
+        // Auto focus
+        window.addEventListener('load', function() {
+            document.getElementById('fullName').focus();
+        });
+    </script>
+</body>
+</html>
